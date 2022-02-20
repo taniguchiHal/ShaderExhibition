@@ -51,22 +51,22 @@ Shader "summerSea"
 				float3 worldPos : TEXCOORD3;
 			};
 
+			// SeaProperties
+			float _GradientPower;
+			float _ReflectionPower;
 
+			// Foam
 			sampler2D _FoamTex;
 			float _EnableFoam;
 			float _FoamSize;
 			float _EnableDrawingDist;
 			float _DrawingDistPower;
-			
-
-			float _GradientPower;
-			float _ReflectionPower;
-			
 			float _EdgeWidth;
 			float _EdgeFalloff;
-
 			float _FoamScrollSpeed;
 
+
+			// vertex
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -106,6 +106,7 @@ Shader "summerSea"
 					dot(st, float2(269.5, 183.3)));
 				return -1.0 + 2.0 * frac(sin(st) * 43758.5453123);
 			}
+
 			// perinNoise
 			float perlinNoise(fixed2 st)
 			{
@@ -138,9 +139,10 @@ Shader "summerSea"
 				return normal;
 			}
 
+			// DepthTextureの宣言
 			UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
 
-
+			// fragment
 			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed4 col = 1;
@@ -186,7 +188,7 @@ Shader "summerSea"
 				col.rgb = toRGB(cos_grad);
 				col.a = saturate(fadeVolume);
 
-
+				// ワールド視線ベクトル
 				half3 worldViewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
 				//エイリアシング防止
@@ -207,8 +209,10 @@ Shader "summerSea"
 					5);
 				vReflect = saturate(vReflect * _ReflectionPower);
 				
-
+				// reflectionの強さ
 				fixed4 refCol = lerp(col, reflectionColor, vReflect);
+
+				// foamの設定
 				fixed4 foamCol = lerp(refCol, 1, depthFoam);
 				col = lerp(refCol, foamCol, foamCol.z);
 
