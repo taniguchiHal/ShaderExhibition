@@ -1,4 +1,4 @@
-﻿Shader "simulation"
+Shader "simulation"
 {
     Properties
     {
@@ -36,7 +36,7 @@
         // 移動する加速度
         float k = 2.0 * texColor.r - texColor.g;
 
-        // ラプシアンフィルタ ->
+        // ラプシアンフィルタ 
         float laplacian =
             tex2D(_SelfTexture2D, uv - duv.zy).r +
             tex2D(_SelfTexture2D, uv + duv.zy).r +
