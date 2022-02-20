@@ -1,4 +1,4 @@
-﻿Shader "waterTests/waterSurf"
+Shader "waterSurf"
 {
     Properties
     {
@@ -34,11 +34,6 @@
         half _Glossiness;
         half _Metallic;
 
-        // debug
-        fixed4 _LineColor;
-        fixed4 _GridColor;
-        fixed4 _LineWidth;
-
         struct Input
         {
             float2 uv_DispTex;
@@ -71,7 +66,6 @@
 
             o.Normal = normalize(float3(v1 - v2, v3 - v4, 0.3));
         }
-
         ENDCG
     }
     FallBack "Diffuse"
