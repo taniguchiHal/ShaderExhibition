@@ -1,4 +1,4 @@
-﻿Shader "summerSea"
+Shader "summerSea"
 {
 	Properties
 	{
@@ -175,9 +175,7 @@
 				depthFoam = mul(depthFoam, length2 * _EnableDrawingDist);
 				depthFoam = mul(depthFoam, length2 * _DrawingDistPower);
 				depthFoam = saturate(depthFoam);
-
-				
-
+		
 				// グラデーション値設定
 				const fixed4 phases = fixed4(0.28, 0.50, 0.07, 0.);
 				const fixed4 amplitudes = fixed4(4.02, 0.34, 0.65, 0.);
@@ -187,6 +185,7 @@
 				cos_grad = clamp(cos_grad, 0, 1);
 				col.rgb = toRGB(cos_grad);
 				col.a = saturate(fadeVolume);
+
 
 				half3 worldViewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
 
