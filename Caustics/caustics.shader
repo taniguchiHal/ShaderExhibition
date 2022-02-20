@@ -47,16 +47,22 @@ Shader "Projector/caustics"
                 float3 worldPos : TEXCOORD2;
             };
 
+
+            // causticsTexProperties
             sampler2D _CausticsTex;
             float4 _CausticsTex_ST;
-
             float4 _CausticsColor;
+
+            // unityProjector
             float4x4 unity_Projector;
+
+            // CausticsProperties
             float _CausticsScrollSpeed;
             float _CausticsDiffraction;
             float _BlendCaustics;
             float _ColorMul;
 
+            // NoiseProperties
             float _EnableDistortion;
             float _NoiseTilling;
             float _NoiseScrollSpeed;
@@ -83,7 +89,7 @@ Shader "Projector/caustics"
                 // 法線がどの平面により向いてるかを元にUVに合成
                 finaluv = lerp(finaluv, x, blendNormal.x);
                 finaluv = lerp(finaluv, y, blendNormal.y);
-                finaluv *= 0.005; 
+                finaluv *= 0.005f;
                 return half4(finaluv.x, finaluv.y, 0, 0);
             }
 
@@ -147,29 +153,32 @@ Shader "Projector/caustics"
                 fixed3 col = fixed3(0,0,0);
                 float alpha = 1;
 
+                // noiseUV作成
                 float2 noise = float2(mul(_NoiseScrollSpeed, _Time.y), mul(_NoiseScrollSpeed, _Time.y));
                 noise = (i.uv * _NoiseTilling) + noise;
-
-                // noiseUV作成
                 float2 noiseUV = valueNoise(noise) * fBm(noise);
 
                 // textureの値調整に使用するので, 法線を0~1の値にした後に, 0ベクトル回避
                 // 飛ばした先の法線方向をabsでマイナスの値を回避する
                 float3 blending = abs(i.worldNormal);
+
                 // 0ベクトルにならないように0.00001を最低値とする
                 float3 blendNormal = normalize(max(blending , 0.00001));
+
                 // 合計値を1に調整
                 float b = (blendNormal.x + blendNormal.y + blendNormal.z);
                 blendNormal /= float3(b, b, b);
 
+                // CausticsTexUV
                 float2 uvTotal = triplanarUV(blendNormal, i.worldPos) * _CausticsTex_ST;
 
-
+                // autoScroll用UV
                 float scroll = frac(_CausticsScrollSpeed / 100 * _Time.y);
                 
                 // NoiseUVとScrollの切替
                 scroll = lerp(scroll, noiseUV, _EnableNoise);
 
+                // 色の取得
                 fixed c1r = tex2D(_CausticsTex, uvTotal + scroll + frac(fixed2(_CausticsDiffraction, _CausticsDiffraction)));
                 fixed c1g = tex2D(_CausticsTex, uvTotal + scroll + frac(fixed2(_CausticsDiffraction, -_CausticsDiffraction)));
                 fixed c1b = tex2D(_CausticsTex, uvTotal + scroll + frac(fixed2(-_CausticsDiffraction, -_CausticsDiffraction)));
@@ -182,6 +191,8 @@ Shader "Projector/caustics"
 
                 // causticsの追加
                 c1 = lerp(c1, c2, _BlendCaustics * 0.5);
+
+                // color設定
                 col = saturate(c1.rgb * _CausticsColor * _ColorMul);
 
                 return float4(col, alpha);
