@@ -35,22 +35,27 @@ Shader "Geometry/TitlePolygon"
 
 			#include "UnityCG.cginc"
 
+			// Texture設定
 			fixed4 _Color;
 			sampler2D _Texture;
 			float4 _Texture_ST;
-			fixed4 _EmissiveColor;
+
 			sampler2D _EmissiveTex;
 			float4 _EmissiveTex_ST;
+			fixed4 _EmissiveColor;
 
+			// Enable
 			float _EnableDistChange;
 			float _EnableNormalChange;
 
+			// Polygon Setting
 			float _ScalePower;
 			float _RotationPower;
 			float _RotationSpeed;
 			float _StartDistance;
 			float _EndDistance;
 			float4 _ScaleDistancePower;
+
 
 			struct appdata
 			{
@@ -73,25 +78,26 @@ Shader "Geometry/TitlePolygon"
 
 			// Pos, Angle, Axis
 			float3 rotate(float3 pos, float angle, float3 axis)
-            {
-                float3 a = normalize(axis);
-                float s = sin(angle);
-                float c = cos(angle);
-                float r = 1.0 - c;
-                float3x3 m = float3x3(
-                    a.x * a.x * r + c, a.y * a.x * r + a.z * s, a.z * a.x * r - a.y * s,
-                    a.x * a.y * r - a.z * s, a.y * a.y * r + c, a.z * a.y * r + a.x * s,
-                    a.x * a.z * r + a.y * s, a.y * a.z * r - a.x * s, a.z * a.z * r + c
-                );
+           		{
+                		float3 a = normalize(axis);
+                		float s = sin(angle);
+                		float c = cos(angle);
+                		float r = 1.0 - c;
+                		float3x3 m = float3x3(
+                    			a.x * a.x * r + c, a.y * a.x * r + a.z * s, a.z * a.x * r - a.y * s,
+                    			a.x * a.y * r - a.z * s, a.y * a.y * r + c, a.z * a.y * r + a.x * s,
+                    			a.x * a.z * r + a.y * s, a.y * a.z * r - a.x * s, a.z * a.z * r + c
+                			);
 
-                return mul(m, pos);
-            }
+               			return mul(m, pos);
+            		}
 
 			// vertexShader
 			appdata vert(appdata v)
 			{
 				return v;
 			}
+
 
 			// geometryShader
 			[maxvertexcount(3)]
@@ -126,6 +132,7 @@ Shader "Geometry/TitlePolygon"
 					// 法線ベクトルに合わせて移動, その場で回転
 					float distRot = (_RotationPower * ((_RotationSpeed * _Time.y) * random3)) * destruction;
 
+					// 回転、移動
 					v.vertex.xyz = (v.vertex.xyz - center) * (1.0 - destruction * _ScalePower) + center;
 					v.vertex.xyz = rotate(v.vertex.xyz - center, distRot, random3) + center;
 					v.vertex.xyz += (normal * normalState) * destruction * random3;
@@ -140,6 +147,7 @@ Shader "Geometry/TitlePolygon"
 
 					stream.Append(o);
 				}
+
 				stream.RestartStrip();
 			}
 
