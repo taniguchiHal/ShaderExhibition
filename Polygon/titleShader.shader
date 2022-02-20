@@ -1,4 +1,4 @@
-﻿Shader "Geometry/TitlePolygon"
+Shader "Geometry/TitlePolygon"
 {
 	Properties
 	{
@@ -65,6 +65,7 @@
 				float3 distance : TEXCOORD1;
 			};
 
+			// 乱数
 			float rand(float2 seed)
 			{
 				return frac(sin(dot(seed.xy, float2(12.9898, 78.233))) * 43758.5453);
