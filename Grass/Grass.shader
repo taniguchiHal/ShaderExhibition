@@ -121,35 +121,35 @@ Shader "Geometry/Grass"
 				float2 _WindFrequency;
 				float _WindStrength;
 
-				// ŠO•”Param
+				// å¤–éƒ¨Param
 				float4 _PlayerPos;
 
 				float _PlayerRadius;
 				float _PlayerFallDownGrass;
+
 
 				[maxvertexcount(BLADE_SEGMENTS * 2 + 1)]
 				void geo(triangle vertexOutput IN[3], inout TriangleStream<g2f> triStream)
 				{
 					g2f o;
 					float3 pos = IN[0].vertex;
-					// Ú‹óŠÔ‚ğ‹‚ß‚é->ƒIƒuƒWƒFƒNƒg‚ÌÚü‚É‚’¼‚Èü‚ª•K—v
-					//->2ƒxƒNƒgƒ‹‚ÌŠOÏ‚ğ‹‚ß‚Ä3ƒxƒNƒgƒ‹ì‚é
+					// æ¥ç©ºé–“ã‚’æ±‚ã‚ã‚‹->ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®æ¥ç·šã«å‚ç›´ãªç·šãŒå¿…è¦
+					//->2ãƒ™ã‚¯ãƒˆãƒ«ã®å¤–ç©ã‚’æ±‚ã‚ã¦3ãƒ™ã‚¯ãƒˆãƒ«ä½œã‚‹
 					float3 vNormal = IN[0].normal;
 					float4 vTangent = IN[0].tangent;
 					float3 vBinormal = cross(vNormal, vTangent) * vTangent.w;
 
-					// Ú‹óŠÔ3ƒxƒNƒgƒ‹‚Ìs—ñ
+					// æ¥ç©ºé–“3ãƒ™ã‚¯ãƒˆãƒ«ã®è¡Œåˆ—
 					float3x3 tangentToLocal = float3x3(
 						vTangent.x, vBinormal.x, vNormal.x,
 						vTangent.y, vBinormal.y, vNormal.y,
 						vTangent.z, vBinormal.z, vNormal.z
 						);
 
-
 					float4 worldPos = mul(unity_ObjectToWorld, IN[0].vertex);
 
 					// interactive
-					float3 dis = distance(_PlayerPos, worldPos);		// ’¸“_‚Ìƒ[ƒ‹ƒhÀ•W‚ÆƒvƒŒƒCƒ„[‚ÌÀ•W‚Ì‹——£
+					float3 dis = distance(_PlayerPos, worldPos);		// é ‚ç‚¹ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã®è·é›¢
 					float3 radius = 1 - saturate(dis / _PlayerRadius); 
 					float3 sphereDisp = worldPos - _PlayerPos;
 					sphereDisp *= radius;
@@ -158,32 +158,33 @@ Shader "Geometry/Grass"
 					float height = (rand(pos.zyx) * 2 - 1) * _BladeHeightRandom - _BladeHeight;
 					float width = (rand(pos.xzy) * 2 - 1) * _BladeWidthRandom + _BladeWidth;
 
-					// textureg—p
+					// textureä½¿ç”¨
 					float2 uv = pos.xz * _WindDistortionMap_ST.xy + _WindDistortionMap_ST.zw + _WindFrequency * (_Time.y);
-					float2 windSample = (tex2Dlod(_WindDistortionMap, float4(uv, 0, 0)).xy * 2 - 1) * _WindStrength;	// 0~1‚Ì”ÍˆÍ‚©‚ç-1~1‚Ì”ÍˆÍ‚ÉÄƒXƒP[ƒŠƒ“ƒO
+					float2 windSample = (tex2Dlod(_WindDistortionMap, float4(uv, 0, 0)).xy * 2 - 1) * _WindStrength;	// 0~1ã®ç¯„å›²ã‹ã‚‰-1~1ã®ç¯„å›²ã«å†ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°
 					float3 wind = normalize(float3(windSample.x, windSample.y, 0));
 
-					// rand()‚Ìˆø”‚ÍˆÊ’u‚ğg—p‚·‚é
-					float3x3 facingRotationMatrix = AngleAxis3x3(rand(pos) * UNITY_TWO_PI, float3(0, 0, 1));							// Šp“x‚ğ¶¬
-					float3x3 bendRotationMatrix = AngleAxis3x3(rand(pos.zzx) * _BendRotationRandom * UNITY_PI * 0.5, float3(-1, 0, 0)); // UNITY_PI*0.5‚Å0~90“x
+					// rand()ã®å¼•æ•°ã¯ä½ç½®ã‚’ä½¿ç”¨ã™ã‚‹
+					float3x3 facingRotationMatrix = AngleAxis3x3(rand(pos) * UNITY_TWO_PI, float3(0, 0, 1));							// è§’åº¦ã‚’ç”Ÿæˆ
+					float3x3 bendRotationMatrix = AngleAxis3x3(rand(pos.zzx) * _BendRotationRandom * (UNITY_PI * 0.5), float3(-1, 0, 0)); // UNITY_PI*0.5ã§0~90åº¦
 					float3x3 windRotation = AngleAxis3x3(UNITY_PI * windSample, wind);
-					float3x3 transformationMatrix = mul(mul(mul(tangentToLocal, windRotation), facingRotationMatrix), bendRotationMatrix);	// ã‹L‚ğŒ³‚ÉtangentToLocal‚ğæZ
-					float3x3 transformationMatrixFacing = mul(tangentToLocal, facingRotationMatrix);		// Ú‹óŠÔ‚ğg—p‚µ‚ÄæZ
+					float3x3 transformationMatrix = mul(mul(mul(tangentToLocal, windRotation), facingRotationMatrix), bendRotationMatrix);
+					float3x3 transformationMatrixFacing = mul(tangentToLocal, facingRotationMatrix);		// æ¥ç©ºé–“ã‚’ä½¿ç”¨ã—ã¦ä¹—ç®—
 
-					// 6’¸“_ì¬ -> 1roop‚É‚Â‚«2’¸“_’Ç‰Á
+					// 6é ‚ç‚¹ä½œæˆ -> 1roopã«ã¤ã2é ‚ç‚¹è¿½åŠ 
 					for (int i = 0; i < BLADE_SEGMENTS; i++) {
 						float t = i / (float)BLADE_SEGMENTS;
 						float segmentHeight = height * t;
 						float segmentWidth = width * (1 - t);
 						float3x3 transformMatrix = i == 0 ? transformationMatrixFacing : transformationMatrix;
 
+						// interactiveå‡ºæ¥ã‚‹åº§æ¨™
 						float3 interactivePos = i == 0 ? IN[0].vertex : IN[0].vertex + ((float3(sphereDisp.x, sphereDisp.y, sphereDisp.z) + wind) * t);
 
 						triStream.Append(GenerateGrassVertex(interactivePos, segmentWidth, segmentHeight, float2(0, t), transformMatrix));
 						triStream.Append(GenerateGrassVertex(interactivePos, -segmentWidth, segmentHeight, float2(1, t), transformMatrix));
 					}
 
-					// ‘‚Ìˆê”Ôã‚Æ‚È‚évertex
+					// è‰ã®ä¸€ç•ªä¸Šã¨ãªã‚‹vertex
 					triStream.Append(GenerateGrassVertex(
 						IN[0].vertex + float3(sphereDisp.x * _PlayerFallDownGrass, 0, sphereDisp.z * _PlayerFallDownGrass) + float3(wind.x, wind.y * 1.2, 0),
 						0,
