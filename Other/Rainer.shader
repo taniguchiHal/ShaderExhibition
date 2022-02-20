@@ -1,12 +1,10 @@
-﻿Shader "Rainer"
+Shader "Rainer"
 {
     Properties
     {
         _MainTex("Texture",2D) = "black"{}
         _Size("Texture Size", float) = 1
-
         _Intensity("Rain Intensity",Range(0, 13)) = 8
-
         _RainerSpeed("Rainer Speed", Range(0.01, 1)) = 0.05
     }
 
