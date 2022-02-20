@@ -1,4 +1,4 @@
-﻿Shader "yomo/Atomospheric Scattering"
+﻿Shader "Atomospheric Scattering"
 {
 	Properties
 	{
