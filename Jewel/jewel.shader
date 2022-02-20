@@ -1,4 +1,4 @@
-﻿Shader "Jewel"
+Shader "Jewel"
 {
     Properties
     {
@@ -6,15 +6,15 @@
         _LayerTex("Layer Tex",2D) = "white"{}
         _LayerTint("Layer Tint",COLOR) = (1,1,1,1)
 
-		[Header(Layer1)]
-		[Toggle(EnableLayer1)] _EnableLayer1("Enable", Float) = 0
-		_Layer1Tex("Layer1 Tex",2D) = "white"{}
-		_Layer1Tint("Layer1 Tint", COLOR) = (1,1,1,1)
+	[Header(Layer1)]
+	[Toggle(EnableLayer1)] _EnableLayer1("Enable", Float) = 0
+	_Layer1Tex("Layer1 Tex",2D) = "white"{}
+	_Layer1Tint("Layer1 Tint", COLOR) = (1,1,1,1)
 
-		[Header(Layer2)]
-		[Toggle(EnableLayer2)] _EnableLayer2("Enable", Float) = 0
-		_Layer2Tex("Layer2 Tex",2D) = "white"{}
-		_Layer2Tint("Layer2 Tint", COLOR) = (1,1,1,1)
+	[Header(Layer2)]
+	[Toggle(EnableLayer2)] _EnableLayer2("Enable", Float) = 0
+	_Layer2Tex("Layer2 Tex",2D) = "white"{}
+	_Layer2Tint("Layer2 Tint", COLOR) = (1,1,1,1)
 
         [Header(Layers Global Properties)]
         _LayerHeightBias("Layer Height Start Bias", Range(0.0, 0.2)) = 0.1
@@ -39,10 +39,10 @@
         _FresnelColorInside("Fresnel Color Inside", COLOR) = (1,1,0.5,1)
         _FresnelColorOutside("Fresnel Color Outside", COLOR) = (1,1,1,1)
 
-		[Header(Specular)]
-		[Toggle(EnableSpecular)] _EnableSpeqular("Enable", Float) = 0
-		_SpecularTightness("Specular Tightness", Range(0.0, 40.0)) = 1.0
-		_SpecularBrightness("Specular Brightness", Range(0.0, 5.0)) = 1.0
+	[Header(Specular)]
+	[Toggle(EnableSpecular)] _EnableSpeqular("Enable", Float) = 0
+	_SpecularTightness("Specular Tightness", Range(0.0, 40.0)) = 1.0
+	_SpecularBrightness("Specular Brightness", Range(0.0, 5.0)) = 1.0
 
         [Header(Refraction)]
         [Toggle(EnableRefraction)] _EnableRefraction("Enable Refraction", Float) = 0
@@ -55,13 +55,14 @@
     SubShader
     {
         Tags { "RenderType" = "Opaque" }
-	    Tags { "LightMode" = "ForwardBase" }
+	Tags { "LightMode" = "ForwardBase" }
         LOD 100
         GrabPass{"_GrabTexture"}
 
         Pass{
             CGPROGRAM
 
+            // shaderFeature
             #pragma shader_feature __ EnableLayer1
             #pragma shader_feature __ EnableLayer2
             #pragma shader_feature __ EnableRefraction
@@ -109,18 +110,19 @@
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
+
             // layerTex
             sampler2D _LayerTex;
             fixed4 _LayerTint;
             float4 _LayerTex_ST;
 
-	        sampler2D _Layer1Tex;
-	        fixed4 _Layer1Tint;
-	        float4 _Layer1Tex_ST;
+	    sampler2D _Layer1Tex;
+	    fixed4 _Layer1Tint;
+	    float4 _Layer1Tex_ST;
 
-	        sampler2D _Layer2Tex;
-	        fixed4 _Layer2Tint;
-	        float4 _Layer2Tex_ST;
+	    sampler2D _Layer2Tex;
+	    fixed4 _Layer2Tint;
+	    float4 _Layer2Tex_ST;
 
             // global layer param
             float _LayerDepthFalloff;
@@ -144,13 +146,13 @@
             float fresnelPower = 4;
             float fresnelScale = 0.1f;
             float fresnelBias = -0.2f;
-	        float _FresnelTightness;
-	        float4 _FresnelColorInside;
-	        float4 _FresnelColorOutside;
+	    float _FresnelTightness;
+	    float4 _FresnelColorInside;
+	    float4 _FresnelColorOutside;
 
             // specular
-	        float _SpecularTightness;
-	        float _SpecularBrightness;
+	    float _SpecularTightness;
+	    float _SpecularBrightness;
 
             float3 etaRatio = float3(0.83f,0.67f,0.55f);
             sampler2D _GrabTexture;
@@ -173,8 +175,10 @@
                 float3 dirToCamLocal = camPosLocal - localPos;
                 float3 camPosTexcoord = mul(tbn, dirToCamLocal);
 
+                
                 v2f o;
-
+                
+                // unity
                 UNITY_INITIALIZE_OUTPUT(v2f, o);
                 UNITY_SETUP_INSTANCE_ID(y);
                 UNITY_TRANSFER_INSTANCE_ID(y, o);
@@ -190,6 +194,7 @@
                 o.screenPos = ComputeScreenPos(o.pos);
                 o.viewNormal = normalize(mul(UNITY_MATRIX_MV, float4(v.normal, 0.0)).xyz);
 
+                // fog
                 #if defined(EnableFog)
                 UNITY_TRANSFER_FOG(o, o.pos);
                 #endif
@@ -200,7 +205,7 @@
 
             fixed4 frag(v2f i) : SV_Target
             {
-	            float phong = saturate(dot(i.worldNormal, normalize(_WorldSpaceCameraPos - i.worldPos)));
+	        float phong = saturate(dot(i.worldNormal, normalize(_WorldSpaceCameraPos - i.worldPos)));
                 UNITY_SETUP_INSTANCE_ID(i);
 
                 // heightMapUV
@@ -215,10 +220,13 @@
                 // height-field offset
                 float3 eyeVec = normalize(i.camPosTexcoord);
                 float height = tex2D(_MarbleTex, TRANSFORM_TEX(uvMarble, _MarbleTex)).r;
-                // v-> heightMap
+
+                // heightMap用uv
                 float v = height * _MarbleHeightScale - (_MarbleHeightScale * 0.5);
+
                 // marble用UV
                 float2 marbleUV = i.uv + eyeVec.xy * v;
+
 
                 float3 colorLayerAccum = float3(0.0, 0.0, 0.0);
                 float layerDepthFalloffAccum = 1.0;
@@ -233,24 +241,24 @@
                 layerHeightBiasAccum += _LayerHeightBiasStep;
 
                 // layer1
-	            #ifdef EnableLayer1
-	            layerBaseUV = TRANSFORM_TEX(i.uv, _Layer1Tex);
-	            layerParallaxUV = layerBaseUV + eyeVec.xy * v + eyeVec.xy * -layerHeightBiasAccum;
+	        #ifdef EnableLayer1
+	        layerBaseUV = TRANSFORM_TEX(i.uv, _Layer1Tex);
+	        layerParallaxUV = layerBaseUV + eyeVec.xy * v + eyeVec.xy * -layerHeightBiasAccum;
 
-	            colorLayerAccum += tex2D(_Layer1Tex, layerParallaxUV).xyz * layerDepthFalloffAccum * _Layer1Tint.xyz;
-	            layerDepthFalloffAccum *= _LayerDepthFalloff;
-	            layerHeightBiasAccum += _LayerHeightBiasStep;
-	            #endif
+	        colorLayerAccum += tex2D(_Layer1Tex, layerParallaxUV).xyz * layerDepthFalloffAccum * _Layer1Tint.xyz;
+	        layerDepthFalloffAccum *= _LayerDepthFalloff;
+	        layerHeightBiasAccum += _LayerHeightBiasStep;
+	        #endif
 
                 // layer2
-	            #ifdef EnableLayer2
-	            layerBaseUV = TRANSFORM_TEX(i.uv, _Layer2Tex);
-	            layerParallaxUV = layerBaseUV + eyeVec.xy * v + eyeVec.xy * -layerHeightBiasAccum;
+	        #ifdef EnableLayer2
+	        layerBaseUV = TRANSFORM_TEX(i.uv, _Layer2Tex);
+	        layerParallaxUV = layerBaseUV + eyeVec.xy * v + eyeVec.xy * -layerHeightBiasAccum;
 
-	            colorLayerAccum += tex2D(_Layer2Tex, layerParallaxUV).xyz * layerDepthFalloffAccum * _Layer2Tint.xyz;
-	            layerDepthFalloffAccum *= _LayerDepthFalloff;
-	            layerHeightBiasAccum += _LayerHeightBiasStep;
-	            #endif
+	        colorLayerAccum += tex2D(_Layer2Tex, layerParallaxUV).xyz * layerDepthFalloffAccum * _Layer2Tint.xyz;
+	        layerDepthFalloffAccum *= _LayerDepthFalloff;
+	        layerHeightBiasAccum += _LayerHeightBiasStep;
+	        #endif
 
 
                 float3 color = colorLayerAccum;
@@ -274,24 +282,24 @@
                 color += texMarble.xyz * _MarbleTint.xyz;
                 alpha += saturate(dot(color, float3(0.299, 0.587, 0.114)));
 
-	            // specular
-	            #ifdef EnableSpecular
-	            float3 worldNormalNormalized = normalize(i.worldNormal);
-	            float3 r = reflect(-_WorldSpaceLightPos0.xyz, worldNormalNormalized);
-	            float specular = pow(saturate(dot(r, normalize(i.worldViewDir))), _SpecularTightness);
-	            color += _LightColor0.xyz * specular * _SpecularBrightness;
-	            alpha += specular * _SpecularBrightness;
-	            #endif
+	        // specular
+	        #ifdef EnableSpecular
+	        float3 worldNormalNormalized = normalize(i.worldNormal);
+	        float3 r = reflect(-_WorldSpaceLightPos0.xyz, worldNormalNormalized);
+	        float specular = pow(saturate(dot(r, normalize(i.worldViewDir))), _SpecularTightness);
+	        color += _LightColor0.xyz * specular * _SpecularBrightness;
+	        alpha += specular * _SpecularBrightness;
+	        #endif
 
                 color = saturate(color);
                 alpha = saturate(alpha);
 
 
-	            // reflection
+	        // reflection
                 #ifdef EnableRefraction
                 float2 screenUV = i.screenPos.xy / i.screenPos.w;
-                half4 bgcolor = tex2D(_GrabTexture, screenUV
-                    + (-i.viewNormal.xy * 0.5 + float2(height, 0.0)) * _RefractionStrength);
+                half4 bgcolor = tex2D(_GrabTexture,
+                    screenUV + (-i.viewNormal.xy * 0.5 + float2(height, 0.0)) * _RefractionStrength);
                 color = lerp(bgcolor.xyz, color, alpha);
                 alpha = 1.0f;
                 #endif
