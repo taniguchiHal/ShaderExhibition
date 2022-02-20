@@ -1,4 +1,4 @@
-﻿Shader "Projector/caustics"
+Shader "Projector/caustics"
 {
     Properties
     {
@@ -147,14 +147,11 @@
                 fixed3 col = fixed3(0,0,0);
                 float alpha = 1;
 
-                // noiseテクスチャの作成
                 float2 noise = float2(mul(_NoiseScrollSpeed, _Time.y), mul(_NoiseScrollSpeed, _Time.y));
-                noise = i.uv * _NoiseTilling + noise;
-                float2 noiseUV = float2(_Time.y, _Time.y);
-                noiseUV = i.uv + noiseUV;
+                noise = (i.uv * _NoiseTilling) + noise;
 
-                noiseUV = lerp(noiseUV, valueNoise(noise) * fBm(noise) , _EnableNoise);
-
+                // noiseUV作成
+                float2 noiseUV = valueNoise(noise) * fBm(noise);
 
                 // textureの値調整に使用するので, 法線を0~1の値にした後に, 0ベクトル回避
                 // 飛ばした先の法線方向をabsでマイナスの値を回避する
@@ -165,12 +162,12 @@
                 float b = (blendNormal.x + blendNormal.y + blendNormal.z);
                 blendNormal /= float3(b, b, b);
 
-                // uvの合成
                 float2 uvTotal = triplanarUV(blendNormal, i.worldPos) * _CausticsTex_ST;
 
 
                 float scroll = frac(_CausticsScrollSpeed / 100 * _Time.y);
-
+                
+                // NoiseUVとScrollの切替
                 scroll = lerp(scroll, noiseUV, _EnableNoise);
 
                 fixed c1r = tex2D(_CausticsTex, uvTotal + scroll + frac(fixed2(_CausticsDiffraction, _CausticsDiffraction)));
@@ -183,6 +180,7 @@
                 fixed c2b = tex2D(_CausticsTex, uvTotal - scroll - frac(fixed2(-_CausticsDiffraction, -_CausticsDiffraction)));
                 fixed4 c2 = fixed4(c2r, c2g, c2b, 1);
 
+                // causticsの追加
                 c1 = lerp(c1, c2, _BlendCaustics * 0.5);
                 col = saturate(c1.rgb * _CausticsColor * _ColorMul);
 
